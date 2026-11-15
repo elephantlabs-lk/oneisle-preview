@@ -803,3 +803,32 @@ html[lang="si"] .h1 { font-size: clamp(36px, 5.2vw, 88px); }
   .mask > img, .mask--side > img { clip-path: none !important; transform: none !important; opacity: 0; transition: opacity .5s var(--ease) !important; }
   .mask.is-in > img { opacity: 1; }
 }
+
+/* ---------- Leadership & team ---------- */
+.lead { display: grid; grid-template-columns: repeat(12, 1fr); gap: 0 24px; align-items: center; }
+.lead + .lead { margin-top: clamp(80px, 10vw, 160px); }
+.lead .portrait { grid-column: 1 / span 5; }
+.lead__text { grid-column: 7 / -1; }
+.lead--flip .portrait { grid-column: 8 / -1; grid-row: 1; }
+.lead--flip .lead__text { grid-column: 1 / span 6; grid-row: 1; }
+.lead__text .eyebrow { margin-bottom: 22px; color: var(--champagne-deep); }
+.lead__text .h2 { margin-bottom: 32px; }
+.lead__quote { margin: 0 0 28px; padding-left: 24px; border-left: 1px solid var(--champagne); }
+.lead__quote p { font-family: var(--serif); font-weight: 300; font-style: italic; font-size: clamp(22px, 2vw, 32px); line-height: 1.3; margin: 0; }
+.portrait { position: relative; margin: 0; aspect-ratio: 4 / 5; overflow: hidden; background: var(--grey); }
+.portrait img { width: 100%; height: 100%; object-fit: cover; filter: grayscale(.15); transition: transform 1.2s var(--ease), filter .8s; }
+.portrait:hover img { transform: scale(1.03); filter: none; }
+.portrait__ph { position: absolute; inset: 0; display: grid; place-content: center; text-align: center; gap: 14px;
+  background: linear-gradient(160deg, #EDEBE6, #DEDAD2); }
+.portrait__ph span { font-family: var(--serif); font-weight: 300; font-size: clamp(64px, 8vw, 128px); line-height: 1; color: var(--champagne-deep); letter-spacing: .02em; }
+.portrait__ph small { font-size: 10px; letter-spacing: .2em; text-transform: uppercase; color: var(--ink-40); }
+.portrait--sm .portrait__ph span { font-size: clamp(44px, 4vw, 64px); }
+.team { list-style: none; margin: 0; padding: 0; display: grid; grid-template-columns: repeat(4, 1fr); gap: 32px 20px; }
+.team__card .portrait { margin-bottom: 18px; }
+.team__card h3 { font-family: var(--serif); font-weight: 400; font-size: 24px; margin: 0 0 4px; }
+.team__card p { margin: 0; font-size: 13px; color: var(--ink-60); }
+@media (max-width: 900px) {
+  .lead .portrait, .lead--flip .portrait { grid-column: 1 / -1; grid-row: auto; max-width: 420px; margin-bottom: 36px; }
+  .lead__text, .lead--flip .lead__text { grid-column: 1 / -1; grid-row: auto; }
+  .team { grid-template-columns: 1fr 1fr; }
+}
