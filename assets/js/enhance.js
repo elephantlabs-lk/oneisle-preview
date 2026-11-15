@@ -182,4 +182,38 @@
       Promise.race([Promise.all([minTime, fonts]), new Promise(r => setTimeout(r, 2400))]).then(done);
     }
   }
+  /* ---------- Fast page changes ---------- */
+  const internal = a => a && a.href && a.origin === location.origin && /\.html$|\/$/.test(a.pathname) && a.pathname !== location.pathname && !a.hasAttribute('download') && a.target !== '_blank';
+  const pages = [...new Set($$('a[href]').filter(internal).map(a => a.href.split('#')[0]))];
+  // Chrome / Edge: prerender a page as soon as a visitor hovers or touches its link
+  if (HTMLScriptElement.supports && HTMLScriptElement.supports('speculationrules')) {
+    const sr = document.createElement('script');
+    sr.type = 'speculationrules';
+    sr.textContent = JSON.stringify({ prerender: [{ urls: pages, eagerness: 'moderate' }], prefetch: [{ urls: pages, eagerness: 'moderate' }] });
+    document.head.appendChild(sr);
+  }
+  // All browsers: fetch a page in the background on hover / touch / focus, and every menu page when the menu opens
+  const fetched = new Set();
+  const prefetch = href => {
+    href = href.split('#')[0];
+    if (fetched.has(href) || href === location.href.split('#')[0]) return;
+    fetched.add(href);
+    const l = document.createElement('link'); l.rel = 'prefetch'; l.href = href; document.head.appendChild(l);
+  };
+  ['pointerenter', 'touchstart', 'focusin'].forEach(ev => document.addEventListener(ev, e => {
+    const a = e.target.closest && e.target.closest('a[href]');
+    if (internal(a)) prefetch(a.href);
+  }, { passive: true, capture: true }));
+  const trig = $('.menu-trigger');
+  if (trig) trig.addEventListener('click', () => $$('.menu a[href]').filter(internal).forEach(a => prefetch(a.href)));
+  // Thin progress bar the instant a link is clicked
+  const pbar = document.createElement('div');
+  pbar.className = 'navbar-progress'; pbar.setAttribute('aria-hidden', 'true');
+  document.body.appendChild(pbar);
+  document.addEventListener('click', e => {
+    const a = e.target.closest('a[href]');
+    if (!internal(a) || e.defaultPrevented || e.metaKey || e.ctrlKey || e.shiftKey || e.button) return;
+    document.documentElement.classList.add('is-navigating');
+  });
+  window.addEventListener('pageshow', () => document.documentElement.classList.remove('is-navigating'));
 })();
