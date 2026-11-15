@@ -16,9 +16,8 @@
     const raf = t => { lenis.raf(t); requestAnimationFrame(raf); };
     requestAnimationFrame(raf);
   };
-  // Lenis loads async from the CDN — never block first paint on it
+  // Native scrolling is used for speed; Lenis only runs if a page explicitly includes it.
   if (window.Lenis) initLenis();
-  else { const ls = document.getElementById('lenis-js'); if (ls) ls.addEventListener('load', initLenis); }
   const scrollToEl = (el) => {
     if (!el) return;
     if (lenis) lenis.scrollTo(el, { offset: 0, duration: 1.6 });
@@ -112,7 +111,7 @@
   const heroEls = $$('.hero .reveal, .hero .lines, .page-hero, .page-hero .reveal, .page-hero .lines');
   $$('.reveal, .lines, .mask').filter(el => !heroEls.includes(el)).forEach(el => io.observe(el));
   // Above-the-fold hero content animates in on load rather than on scroll
-  const introDelay = document.documentElement.classList.contains('is-loading') ? 1650 : 150;
+  const introDelay = 60;
   requestAnimationFrame(() => setTimeout(() => heroEls.forEach(el => el.classList.add('is-in')), introDelay));
 
   /* ---------- Parallax ---------- */

@@ -158,8 +158,9 @@
     let x = -100, y = -100, cx = -100, cy = -100;
     window.addEventListener('pointermove', e => { x = e.clientX; y = e.clientY; c.classList.add('is-on'); }, { passive: true });
     document.addEventListener('pointerleave', () => c.classList.remove('is-on'));
-    const loop = () => { cx += (x - cx) * .2; cy += (y - cy) * .2; c.style.transform = `translate3d(${cx}px, ${cy}px, 0)`; requestAnimationFrame(loop); };
-    loop();
+    let raf = 0;
+    const loop = () => { cx += (x - cx) * .3; cy += (y - cy) * .3; c.style.transform = `translate3d(${cx}px, ${cy}px, 0)`; raf = (Math.abs(x - cx) + Math.abs(y - cy) > .5) ? requestAnimationFrame(loop) : 0; };
+    window.addEventListener('pointermove', () => { if (!raf) raf = requestAnimationFrame(loop); }, { passive: true });
     const label = $('.cursor__label', c);
     document.addEventListener('pointerover', e => {
       const t = e.target.closest('[data-cursor], a, button, .gal__item, .dn, .hstrip__track, [data-full]');
