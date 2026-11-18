@@ -482,8 +482,9 @@
 
   /* captions that follow a scrub's progress: <p data-at="0-0.45"> */
   $$('[data-scrub],[data-dusk]').forEach(box => {
-    const caps = $$('[data-at]', box.closest('.reveal-s') || box);
-    const num = $('[data-scrub-num]', box.closest('.reveal-s') || box);
+    const scope = box.closest('.reveal-s') || (box.dataset.track && box.closest(box.dataset.track)) || box;
+    const caps = $$('[data-at]', scope);
+    const num = $('[data-scrub-num]', scope);
     if (!caps.length && !num) return;
     box.addEventListener('scrub', e => {
       const p = e.detail;
