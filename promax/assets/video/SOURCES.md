@@ -14,3 +14,8 @@ Free licence: Mixkit Stock Video Free License (https://mixkit.co/license/#videoF
 - apt-golden — Pexels #4099276 "Time-lapse of sunset shining on an apartment building"
 - apt-timber — Pexels #38942463 "Modern Auckland apartment exterior view" (cropped)
 - apt-white — Pexels #35081930 "Modern apartment building with balconies"
+
+## Home hero clips (18 Nov 2026)
+- hero-terrace — Pexels #18531414 "A living room with a large glass door and a pool"
+- hero-timber — Pexels #10135156 "Modern minimalist living room"
+- hero-pool — Pexels #19773860 "The pool is on the roof of a building overlooking the city"

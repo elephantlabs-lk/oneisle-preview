@@ -210,4 +210,4 @@ html { scroll-behavior: auto; }
 .reveal-s__stick .reveal-s__poster { z-index: 0; }
 
 .lv-cap, .lv-curtain .reveal-s__num { text-shadow: 0 2px 24px rgba(0,0,0,.45), 0 1px 3px rgba(0,0,0,.3); }
-.lv-curtain .reveal-s__stick::after { background: linear-gradient(180deg, rgba(0,0,0,.28), rgba(0,0,0,0) 26
+.lv-curtain .reveal-s__stick::after { background: linear-gradient(180deg, rgba(0,0,0,.28), rgba(0,0,0,0) 26%, rgba(0,0,0,0) 60%, rgba(0,0,0,.42)); }

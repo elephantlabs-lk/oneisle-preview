@@ -231,7 +231,7 @@
     const drawn = !!$('[data-drawn]', root);
     const GEO = { roof: [18, 34], l7: [34, 48], l6: [48, 62], l5: [62, 76], l4: [76, 90], l3: [90, 104], l2: [104, 116], l1: [116, 128], g: [128, 146] };
     const X = drawn ? [22, 78] : b.x;
-    if (drawn) {
+    if (drawn && svg) {
       const L = (x1, y1, x2, y2, w = .35, o = .55) => `<line x1="${x1}" y1="${y1}" x2="${x2}" y2="${y2}" stroke="#F4EEE6" stroke-opacity="${o}" stroke-width="${w}"/>`;
       let g = `<rect x="22" y="34" width="56" height="112" fill="#1E1714" stroke="#F4EEE6" stroke-opacity=".7" stroke-width=".45"/>`;
       // rooftop: pergola + planting
@@ -264,12 +264,12 @@
       const r = document.createElementNS(NS, 'rect');
       r.setAttribute('x', X[0]); r.setAttribute('width', X[1] - X[0]); r.setAttribute('y', y[0]); r.setAttribute('height', y[1] - y[0]); r.dataset.i = i;
       if (drawn) r.setAttribute('x', 16), r.setAttribute('width', 68);
-      svg.appendChild(r);
+      if (svg) svg.appendChild(r);
       list.insertAdjacentHTML('beforeend', `<li><button type="button" aria-pressed="false" data-i="${i}">${f.label}</button></li>`);
     });
     const sel = i => {
       const f = b.floors[i];
-      $$('rect', svg).forEach(r => r.classList.toggle('on', +r.dataset.i === i));
+      if (svg) $$('rect', svg).forEach(r => r.classList.toggle('on', +r.dataset.i === i));
       $$('button', list).forEach(x => x.setAttribute('aria-pressed', +x.dataset.i === i));
       const kind = f.kind === 'residential' ? 'Residential level' : f.kind === 'podium' ? 'Podium' : 'Amenity';
       let body = f.kind === 'residential'
@@ -281,7 +281,7 @@
         : `<p>${f.note || ''}</p>`;
       det.innerHTML = `<span class="lbl" style="color:var(--gold)">${dev.name} · ${kind}</span><h3>${f.label}</h3>${body}`;
     };
-    svg.addEventListener('click', e => { const r = e.target.closest('rect'); if (r) sel(+r.dataset.i); });
+    if (svg) svg.addEventListener('click', e => { const r = e.target.closest('rect'); if (r) sel(+r.dataset.i); });
     list.addEventListener('click', e => { const x = e.target.closest('button'); if (x) sel(+x.dataset.i); });
     sel(b.floors.findIndex(f => f.kind === 'residential'));
   });
@@ -502,7 +502,7 @@
   $$('[data-hero-cycle]').forEach(hero => {
     const vids = $$('video[data-clip]', hero), poster = $('.lv-hero__media img', hero), dots = $$('.lv-hero__dots i', hero);
     if (reduced || !vids.length) return;
-    const size = (small() || saveData) ? 360 : 720;
+    const size = saveData ? 360 : small() ? 'm' : 720; // 'm' = portrait crop for phones
     let i = -1, timer = 0;
     const show = n => {
       const v = vids[n];
