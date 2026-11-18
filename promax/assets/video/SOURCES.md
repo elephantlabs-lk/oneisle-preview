@@ -3,3 +3,6 @@ Free licence: Mixkit Stock Video Free License (https://mixkit.co/license/#videoF
 - hero-palms — Mixkit #3013 "Palm tree covering the sun's rays"
 - morning-curtains — Mixkit #22066 "Opening curtains to bright sunshine"
 - rain-water — Mixkit #18312 "Rain falling on the water of a lake seen up close"
+
+- cycle-tower — Pexels #30156442 (Pexels licence)
+- cycle-tropical — Pexels #39105099 (Pexels licence)

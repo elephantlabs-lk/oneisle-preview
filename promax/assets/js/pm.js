@@ -483,6 +483,103 @@
   });
 
 
+
+  /* =================== Lenval-grade layer =================== */
+
+  /* Smooth scrolling (desktop, fine pointers only) synced with GSAP */
+  if (window.Lenis && !reduced && window.matchMedia('(hover: hover) and (pointer: fine)').matches) {
+    const lenis = new window.Lenis({ lerp: 0.11, wheelMultiplier: 1, smoothWheel: true });
+    window.pmLenis = lenis;
+    if (window.gsap && window.ScrollTrigger) {
+      lenis.on('scroll', window.ScrollTrigger.update);
+      window.gsap.ticker.add(t => lenis.raf(t * 1000));
+      window.gsap.ticker.lagSmoothing(0);
+    } else { const raf = t => { lenis.raf(t); requestAnimationFrame(raf); }; requestAnimationFrame(raf); }
+    document.addEventListener('click', e => { const a = e.target.closest('a[href^="#"]'); if (!a) return; const t = document.querySelector(a.getAttribute('href')); if (t) { e.preventDefault(); lenis.scrollTo(t); } });
+  }
+
+  /* Hero: rotate through clips, ~8s each, with progress dots */
+  $$('[data-hero-cycle]').forEach(hero => {
+    const vids = $$('video[data-clip]', hero), poster = $('.lv-hero__media img', hero), dots = $$('.lv-hero__dots i', hero);
+    if (reduced || !vids.length) return;
+    const size = (small() || saveData) ? 360 : 720;
+    let i = -1, timer = 0;
+    const show = n => {
+      const v = vids[n];
+      if (!v.src) v.src = `${v.dataset.clip}-${size}.mp4`;
+      v.currentTime = 0;
+      const p = v.play(); if (p && p.catch) p.catch(() => {});
+      const swap = () => { vids.forEach((x, k) => x.classList.toggle('on', k === n)); if (poster) poster.classList.remove('on'); vids.forEach((x, k) => { if (k !== n) setTimeout(() => x.pause(), 1600); }); };
+      if (v.readyState >= 2) swap(); else v.addEventListener('playing', swap, { once: true });
+      dots.forEach((d, k) => { d.classList.remove('on'); if (k === n) { void d.offsetWidth; d.classList.add('on'); } });
+      // preload next clip quietly
+      const nx = vids[(n + 1) % vids.length]; if (!nx.src) { nx.preload = 'auto'; nx.src = `${nx.dataset.clip}-${size}.mp4`; }
+    };
+    const next = () => { i = (i + 1) % vids.length; show(i); clearTimeout(timer); timer = setTimeout(next, 8000); };
+    const start = () => next();
+    if (document.readyState === 'complete') setTimeout(start, 300); else window.addEventListener('load', () => setTimeout(start, 300), { once: true });
+    document.addEventListener('visibilitychange', () => { if (document.hidden) clearTimeout(timer); else { clearTimeout(timer); timer = setTimeout(next, 8000); } });
+  });
+
+  /* Line drawing of a residential building (original artwork, drawn on scroll) */
+  $$('[data-sketch]').forEach(box => {
+    const L = []; const ln = (x1, y1, x2, y2) => L.push(`<line x1="${x1}" y1="${y1}" x2="${x2}" y2="${y2}"/>`);
+    const rc = (x, y, w, h) => L.push(`<rect x="${x}" y="${y}" width="${w}" height="${h}"/>`);
+    // ground line + perspective guides
+    ln(0, 380, 600, 380); ln(40, 380, 300, 70); ln(560, 380, 300, 70);
+    // main block (8 levels)
+    rc(150, 70, 300, 310);
+    for (let k = 0; k < 8; k++) { const y = 380 - (k + 1) * 36; ln(150, y, 450, y); }
+    // balconies & windows on residential floors
+    for (let f = 0; f < 5; f++) { const y = 108 + f * 36; [165, 255, 345].forEach(x => { rc(x, y, 80, 26); ln(x - 6, y + 26, x + 86, y + 26); for (let r = x; r <= x + 80; r += 8) ln(r, y + 18, r, y + 26); }); }
+    // podium fins
+    for (let x = 156; x < 450; x += 10) ln(x, 290, x, 344);
+    // ground columns + entrance
+    [160, 230, 370, 440].forEach(x => rc(x - 4, 344, 8, 36)); rc(276, 350, 48, 30);
+    // rooftop pergola + planters
+    rc(190, 46, 220, 24); for (let x = 196; x <= 404; x += 12) ln(x, 46, x, 70); ln(176, 46, 424, 46);
+    L.push('<path d="M168 70 q8 -18 16 0 M412 70 q8 -18 16 0"/>');
+    // trees + figures for scale
+    L.push('<path d="M70 380 V300 M70 300 q-30 -10 -22 -40 q4 -26 22 -30 q22 4 24 30 q4 28 -24 40"/>');
+    L.push('<path d="M520 380 V310 M520 310 q-26 -8 -20 -34 q4 -22 20 -26 q20 4 22 26 q2 24 -22 34"/>');
+    L.push('<path d="M110 380 v-22 m0 -6 a3 3 0 1 0 0.1 0 M118 380 v-20"/>');
+    box.innerHTML = `<svg viewBox="0 0 600 400" role="img" aria-label="Line drawing of a residential building">${L.join('')}</svg>`;
+    const shapes = $$('line, rect, path', box);
+    shapes.forEach(sh => { const len = sh.getTotalLength ? sh.getTotalLength() : 400; sh.style.strokeDasharray = len; sh.style.strokeDashoffset = reduced ? 0 : len; sh.dataset.len = len; });
+    if (reduced || !window.gsap || !window.ScrollTrigger) { shapes.forEach(sh => (sh.style.strokeDashoffset = 0)); return; }
+    window.gsap.to(shapes, { strokeDashoffset: 0, ease: 'none', stagger: { each: 0.004 }, scrollTrigger: { trigger: box.closest('section'), start: 'top 75%', end: 'center 45%', scrub: 0.6 } });
+  });
+
+  /* Split headline words slide toward each other; spread words drift apart */
+  if (window.gsap && window.ScrollTrigger && !reduced) {
+    const { gsap } = window;
+    $$('[data-slide]').forEach(el => gsap.fromTo(el, { xPercent: 14 * +el.dataset.slide }, { xPercent: 0, ease: 'none', scrollTrigger: { trigger: el, start: 'top bottom', end: 'top 35%', scrub: true } }));
+    $$('[data-spread]').forEach(el => {
+      const w = $$('span', el);
+      gsap.fromTo(w[0], { x: '18vw' }, { x: 0, ease: 'none', scrollTrigger: { trigger: el.parentElement, start: 'top 80%', end: 'center center', scrub: true } });
+      gsap.fromTo(w[2], { x: '-18vw' }, { x: 0, ease: 'none', scrollTrigger: { trigger: el.parentElement, start: 'top 80%', end: 'center center', scrub: true } });
+      gsap.fromTo(w, { opacity: .2 }, { opacity: 1, ease: 'none', scrollTrigger: { trigger: el.parentElement, start: 'top 80%', end: 'center center', scrub: true } });
+    });
+  }
+
+  /* 1.0 – 5.0 index */
+  $$('[data-proc]').forEach(sec => {
+    const D2 = [
+      ['The<br>Architecture', 'Every corner is meticulously designed to balance luxury and practicality — where elegance meets functionality.'],
+      ['The<br>Interiors', 'High-end finishes, premium materials and modern fittings — fully equipped kitchens with custom pantry cupboards and air-conditioned master suites.'],
+      ['The<br>Amenities', 'A scenic rooftop, modern gymnasium, dedicated parking, advanced CCTV security, 24/7 backup power, an automated gate and a Fingara Club lifetime membership.'],
+      ['Sustainable<br>Living', 'Solar energy, rainwater harvesting and eco-conscious car washing — with a 20-year structural warranty on every development.'],
+      ['The<br>Location', 'A cool, calm corner of Nugegoda — moments from the University of Sri Jayewardenepura, supermarkets, healthcare, dining and Fingara Club.']
+    ];
+    const btns = $$('.lv-proc__list button', sec), figs = $$('.lv-proc__img figure', sec), title = $('[data-proc-title]', sec), text = $('[data-proc-text]', sec);
+    const set = n => {
+      btns.forEach((b, k) => b.setAttribute('aria-selected', k === n));
+      figs.forEach((f, k) => f.classList.toggle('on', k === n));
+      title.style.opacity = 0; setTimeout(() => { title.innerHTML = D2[n][0]; text.textContent = D2[n][1]; title.style.opacity = 1; }, 180);
+    };
+    btns.forEach((b, k) => { b.addEventListener('click', () => set(k)); b.addEventListener('mouseenter', () => { if (!small()) set(k); }); });
+  });
+
   /* ---------- Tag every stock image / stock sequence as illustrative ---------- */
   const tagIll = (host) => {
     if (!host || $(':scope > .tag-ill', host)) return;
