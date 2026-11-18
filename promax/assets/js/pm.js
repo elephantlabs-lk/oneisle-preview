@@ -227,9 +227,43 @@
     const key = root.dataset.building, b = D.building && D.building[key], dev = D.developments[key];
     if (!b) return;
     const svg = $('.bs__svg', root), list = $('.bs__floors', root), det = $('.bs__detail', root), NS = 'http://www.w3.org/2000/svg';
+    // Drawn elevation (no photo): geometry in a 100 x 150 viewBox
+    const drawn = !!$('[data-drawn]', root);
+    const GEO = { roof: [18, 34], l7: [34, 48], l6: [48, 62], l5: [62, 76], l4: [76, 90], l3: [90, 104], l2: [104, 116], l1: [116, 128], g: [128, 146] };
+    const X = drawn ? [22, 78] : b.x;
+    if (drawn) {
+      const L = (x1, y1, x2, y2, w = .35, o = .55) => `<line x1="${x1}" y1="${y1}" x2="${x2}" y2="${y2}" stroke="#F4EEE6" stroke-opacity="${o}" stroke-width="${w}"/>`;
+      let g = `<rect x="22" y="34" width="56" height="112" fill="#1E1714" stroke="#F4EEE6" stroke-opacity=".7" stroke-width=".45"/>`;
+      // rooftop: pergola + planting
+      g += `<rect x="30" y="24" width="40" height="10" fill="none" stroke="#C4A77D" stroke-opacity=".8" stroke-width=".35"/>`;
+      for (let x = 32; x <= 68; x += 4) g += L(x, 24, x, 34, .25, .45);
+      g += L(26, 24, 74, 24, .4, .7);
+      [27, 72].forEach(cx => { g += `<circle cx="${cx}" cy="31" r="3" fill="#6E7F5E" fill-opacity=".55"/>`; });
+      // residential floors: 3 bays with windows + balcony rails
+      ['l7', 'l6', 'l5', 'l4', 'l3'].forEach(id => {
+        const [y0, y1] = GEO[id];
+        g += L(22, y1, 78, y1, .35, .5);
+        [25, 43, 61].forEach(x => {
+          g += `<rect x="${x + 2}" y="${y0 + 2.5}" width="11" height="${y1 - y0 - 5}" fill="#C4A77D" fill-opacity=".16" stroke="#F4EEE6" stroke-opacity=".35" stroke-width=".25"/>`;
+          g += L(x, y1 - 2.6, x + 15, y1 - 2.6, .3, .6);
+          for (let k = x + 1.5; k < x + 15; k += 1.6) g += L(k, y1 - 2.6, k, y1, .12, .45);
+        });
+        g += `<rect x="41" y="${y0}" width="1.4" height="${y1 - y0}" fill="#F4EEE6" fill-opacity=".18"/>`;
+      });
+      // podium: vertical fins
+      g += L(22, 116, 78, 116, .35, .5); g += L(22, 128, 78, 128, .45, .6);
+      for (let x = 25; x < 78; x += 3.2) g += L(x, 105, x, 127, .2, .35);
+      // ground: columns + entrance
+      [24, 38, 62, 76].forEach(x => { g += `<rect x="${x - 1}" y="128" width="2" height="18" fill="#C4A77D" fill-opacity=".55"/>`; });
+      g += `<rect x="44" y="134" width="12" height="12" fill="#C4A77D" fill-opacity=".25" stroke="#C4A77D" stroke-opacity=".7" stroke-width=".3"/>`;
+      g += L(10, 146, 90, 146, .5, .6);
+      svg.innerHTML = g;
+    }
     b.floors.forEach((f, i) => {
+      const y = drawn ? GEO[f.id] : f.y;
       const r = document.createElementNS(NS, 'rect');
-      r.setAttribute('x', b.x[0]); r.setAttribute('width', b.x[1] - b.x[0]); r.setAttribute('y', f.y[0]); r.setAttribute('height', f.y[1] - f.y[0]); r.dataset.i = i;
+      r.setAttribute('x', X[0]); r.setAttribute('width', X[1] - X[0]); r.setAttribute('y', y[0]); r.setAttribute('height', y[1] - y[0]); r.dataset.i = i;
+      if (drawn) r.setAttribute('x', 16), r.setAttribute('width', 68);
       svg.appendChild(r);
       list.insertAdjacentHTML('beforeend', `<li><button type="button" aria-pressed="false" data-i="${i}">${f.label}</button></li>`);
     });
@@ -368,6 +402,95 @@
     let ok = false; try { ok = await submitCF7(D.backend.newsletterFormId, 'wpcf7-f719-o2', { 'your-email': v }); } catch (_) {}
     m.textContent = ok ? 'Thank you — you are on the list.' : `Sorry, please email ${D.contact.email}.`;
   }));
+
+
+  /* ---------- Scroll-scrubbed frame sequences ("video scrub") ----------
+     <div data-scrub="assets/frames/NAME" data-frames="72" [data-track="selector"]> … </div>
+     Frames load coarse → fine (step by step), so it works almost at once and sharpens as it loads. */
+  $$('[data-scrub]').forEach(box => {
+    const base = box.dataset.scrub, count = +box.dataset.frames || 1;
+    const set = (window.innerWidth < 700 || saveData) ? 'm' : 'd';
+    const track = box.dataset.track ? box.closest(box.dataset.track) : box;
+    const cv = document.createElement('canvas'); cv.className = 'scrub__cv'; cv.setAttribute('aria-hidden', 'true');
+    box.prepend(cv);
+    const bar = document.createElement('div'); bar.className = 'scrub__load'; bar.innerHTML = '<i></i>';
+    box.appendChild(bar);
+    const ctx = cv.getContext('2d');
+    const frames = new Array(count);
+    let loaded = 0, cur = 0, target = 0, running = false, started = false, lastDrawn = -1;
+    const url = i => `${base}/${set}/${String(i).padStart(3, '0')}.webp`;
+    // coarse → fine order: 0, last, then every 16th, 8th, 4th, 2nd, 1st
+    const order = []; const seen = new Set();
+    const push = i => { if (i >= 0 && i < count && !seen.has(i)) { seen.add(i); order.push(i); } };
+    push(0); push(count - 1);
+    [16, 8, 4, 2, 1].forEach(step => { for (let i = 0; i < count; i += step) push(i); });
+    const nearest = i => { if (frames[i]) return frames[i]; for (let d = 1; d < count; d++) { if (frames[i - d]) return frames[i - d]; if (frames[i + d]) return frames[i + d]; } return null; };
+    const size = () => { const dpr = Math.min(window.devicePixelRatio || 1, 2); const r = box.getBoundingClientRect(); cv.width = Math.round(r.width * dpr); cv.height = Math.round(r.height * dpr); lastDrawn = -1; draw(true); };
+    const draw = (force) => {
+      const i = Math.round(cur); const img = nearest(i);
+      if (!img || (!force && i === lastDrawn && img.__drawn)) return;
+      const cw = cv.width, ch = cv.height, s = Math.max(cw / img.naturalWidth, ch / img.naturalHeight);
+      const w = img.naturalWidth * s, h = img.naturalHeight * s;
+      ctx.drawImage(img, (cw - w) / 2, (ch - h) / 2, w, h);
+      img.__drawn = true; lastDrawn = i;
+      if (!cv.classList.contains('ready')) cv.classList.add('ready');
+    };
+    const progress = () => {
+      const r = track.getBoundingClientRect(), vh = window.innerHeight;
+      const span = Math.max(1, r.height - vh);
+      return Math.min(1, Math.max(0, -r.top / span));
+    };
+    const loop = () => {
+      target = progress() * (count - 1);
+      cur += (target - cur) * 0.22;
+      if (Math.abs(target - cur) < 0.05) cur = target;
+      draw();
+      box.dispatchEvent(new CustomEvent('scrub', { detail: cur / (count - 1) }));
+      if (running) requestAnimationFrame(loop);
+    };
+    const load = () => {
+      if (started) return; started = true;
+      let k = 0; const MAX = 6; let inflight = 0;
+      const next = () => {
+        while (inflight < MAX && k < order.length) {
+          const i = order[k++]; inflight++;
+          const im = new Image(); im.decoding = 'async';
+          im.onload = () => { frames[i] = im; loaded++; inflight--; bar.firstChild.style.transform = `scaleX(${loaded / count})`; if (loaded === count) bar.classList.add('done'); if (Math.abs(i - Math.round(cur)) < 3 || loaded < 3) draw(true); next(); };
+          im.onerror = () => { inflight--; next(); };
+          im.src = url(i);
+        }
+      };
+      next();
+    };
+    if (reduced) { const im = new Image(); im.onload = () => { frames[count - 1] = im; cur = count - 1; size(); }; im.src = url(count - 1); bar.remove(); return; }
+    new IntersectionObserver(es => es.forEach(e => {
+      if (e.isIntersecting) { load(); if (!running) { running = true; size(); requestAnimationFrame(loop); } }
+      else running = false;
+    }), { rootMargin: '120% 0px' }).observe(track);
+    window.addEventListener('resize', size);
+  });
+
+  /* captions that follow a scrub's progress: <p data-at="0-0.45"> */
+  $$('[data-scrub]').forEach(box => {
+    const caps = $$('[data-at]', box.closest('.reveal-s') || box);
+    const num = $('[data-scrub-num]', box.closest('.reveal-s') || box);
+    if (!caps.length && !num) return;
+    box.addEventListener('scrub', e => {
+      const p = e.detail;
+      caps.forEach(c => { const [a, b] = c.dataset.at.split('-').map(Number); c.classList.toggle('off', !(p >= a && p <= b)); });
+      if (num) num.textContent = String(Math.round(p * 100)).padStart(3, '0');
+    });
+  });
+
+
+  /* ---------- Tag every stock image / stock sequence as illustrative ---------- */
+  const tagIll = (host) => {
+    if (!host || $(':scope > .tag-ill', host)) return;
+    if (getComputedStyle(host).position === 'static') host.style.position = 'relative';
+    const t = document.createElement('span'); t.className = 'tag-ill'; t.textContent = 'Illustrative'; host.appendChild(t);
+  };
+  $$('img[src*="assets/stock/"]').forEach(img => { if (!img.closest('.lb') && !img.closest('[data-scrub]')) tagIll(img.parentElement); });
+  $$('[data-scrub]').forEach(box => tagIll(box));
 
   /* ---------- Fast page changes ---------- */
   const internal = a => a && a.href && a.origin === location.origin && /\.html$|\/$/.test(a.pathname) && a.pathname !== location.pathname && !a.hasAttribute('download') && a.target !== '_blank';

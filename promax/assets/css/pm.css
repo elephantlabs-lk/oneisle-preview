@@ -286,9 +286,9 @@ button { font: inherit; color: inherit; background: none; border: 0; padding: 0;
 .bs__stage { position: relative; margin: 0; background: #0b0807; }
 .bs__stage img { width: 100%; height: auto; }
 .bs__svg { position: absolute; inset: 0; width: 100%; height: 100%; }
-.bs__svg rect { fill: #0b0807; fill-opacity: .55; stroke: var(--gold); stroke-opacity: 0; stroke-width: 1.5; vector-effect: non-scaling-stroke; cursor: pointer; transition: fill-opacity .4s, stroke-opacity .4s; }
-.bs__svg rect:hover { fill-opacity: .2; }
-.bs__svg rect.on { fill-opacity: 0; stroke-opacity: 1; }
+.bs__svg rect[data-i] { fill: #0b0807; fill-opacity: .55; stroke: var(--gold); stroke-opacity: 0; stroke-width: 1.5; vector-effect: non-scaling-stroke; cursor: pointer; transition: fill-opacity .4s, stroke-opacity .4s; }
+.bs__svg rect[data-i]:hover { fill-opacity: .2; }
+.bs__svg rect[data-i].on { fill-opacity: 0; stroke-opacity: 1; }
 .bs__panel { position: sticky; top: calc(var(--hh) + 24px); }
 .bs__floors { list-style: none; margin: 0 0 36px; padding: 0; display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 6px; }
 .bs__floors button { width: 100%; height: 52px; border-radius: 999px; box-shadow: inset 0 0 0 1px var(--c-14); font-size: 11px; letter-spacing: .12em; text-transform: uppercase; color: var(--c-70); transition: background .3s, color .3s; white-space: nowrap; }
@@ -491,3 +491,33 @@ html.is-nav .np { opacity: 1; animation: npA 2.4s cubic-bezier(.1,.7,.2,1) forwa
 .hz__end { flex-basis: clamp(240px, 22vw, 360px); }
 @media (min-width: 901px) { .hz.sec { padding-top: calc(var(--hh) + 30px); } .hz__head { margin-bottom: 32px; } }
 @media (min-width: 901px) { .hz__track { padding-left: 42vw; } }
+
+/* ---------- Scroll-scrubbed frame sequences ---------- */
+/* (scrub containers are already positioned) */
+.scrub__cv { position: absolute; inset: 0; width: 100%; height: 100%; display: block; opacity: 0; transition: opacity .6s var(--ease); }
+.scrub__cv.ready { opacity: 1; }
+.scrub__load { position: absolute; z-index: 4; left: 0; right: 0; bottom: 0; height: 2px; background: rgba(244,238,230,.12); pointer-events: none; transition: opacity .6s; }
+.scrub__load i { display: block; height: 100%; background: var(--gold); transform-origin: left; transform: scaleX(0); transition: transform .3s linear; }
+.scrub__load.done { opacity: 0; }
+/* curtain reveal */
+.reveal-s { position: relative; height: 320vh; }
+.reveal-s__stick { position: sticky; top: 0; height: 100svh; overflow: hidden; background: #0d0907; }
+.reveal-s__stick::after { content: ""; position: absolute; inset: 0; background: linear-gradient(180deg, rgba(21,16,13,.35), rgba(21,16,13,0) 30%, rgba(21,16,13,.55)); pointer-events: none; z-index: 1; }
+.reveal-s__poster { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; }
+.reveal-s__cap { position: absolute; z-index: 3; left: 0; right: 0; bottom: clamp(40px, 9vh, 100px); text-align: center; padding: 0 var(--g); transition: opacity .5s var(--ease), transform .6s var(--ease); }
+.reveal-s__cap.off { opacity: 0; transform: translateY(16px); }
+.reveal-s__num { position: absolute; z-index: 3; top: calc(var(--hh) + 20px); left: var(--g); right: var(--g); display: flex; justify-content: space-between; font-variant-numeric: tabular-nums; }
+/* stacked panels that scrub while stuck */
+.stack__wrap { position: relative; height: 210vh; }
+.stack__wrap + .stack__wrap { margin-top: -100vh; }
+.stack__wrap .stack__p { position: sticky; top: 0; }
+.stack__wrap:nth-child(2) { z-index: 2; } .stack__wrap:nth-child(3) { z-index: 3; }
+.stack__bg .scrub__cv { z-index: 1; }
+.no-motion .reveal-s { height: auto; } .no-motion .reveal-s__stick { position: relative; height: 90vh; }
+.no-motion .stack__wrap { height: auto; margin-top: 0 !important; } .no-motion .stack__wrap .stack__p { position: relative; }
+
+.bs__stage--drawn { aspect-ratio: 100 / 150; background: radial-gradient(120% 80% at 50% 10%, #2A211C, #120D0B 70%); border: 1px solid var(--c-14); }
+.bs__stage--drawn .bs__svg rect[data-i] { fill: #C4A77D; fill-opacity: 0; stroke: var(--gold); }
+.bs__stage--drawn .bs__svg rect[data-i]:hover { fill-opacity: .12; }
+.bs__stage--drawn .bs__svg rect[data-i].on { fill-opacity: .18; stroke-opacity: 1; }
+.ft__ill { font-size: 11px; color: var(--c-50); padding-bottom: 18px; }
