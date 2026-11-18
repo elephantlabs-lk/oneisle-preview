@@ -6,3 +6,5 @@ Free licence: Mixkit Stock Video Free License (https://mixkit.co/license/#videoF
 
 - cycle-tower — Pexels #30156442 (Pexels licence)
 - cycle-tropical — Pexels #39105099 (Pexels licence)
+
+- curtain-view frames — Mixkit #22066 (curtains) + Pexels #7578535 "View of trees from a window" (Pexels licence)
