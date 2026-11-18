@@ -39,7 +39,7 @@ window.ONEISLE = {
     'loft': {
       name: 'One Isle Loft',
       location: '86/7C, Kapuwatta Lane, School Road, Nugegoda 10250',
-      startingFrom: 'LKR 27 million++',
+      startingFrom: 'LKR 33 million++',   // per Loft brochure (was 27M on the old site)
       residences: [
         { id: 'modern-oasis',     name: 'Modern Oasis',     sqft: 980,  beds: 2, baths: 1, balconies: 1, plan: null },
         { id: 'tranquil-comfort', name: 'Tranquil Comfort', sqft: 1109, beds: 3, baths: 2, balconies: 2, plan: null }, // CLIENT-CONFIRM beds (detail copy says 2)
