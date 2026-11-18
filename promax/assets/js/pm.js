@@ -470,8 +470,18 @@
     window.addEventListener('resize', size);
   });
 
+  /* Day-to-dusk: real renders cross-fade with scroll (<div data-dusk data-track>) */
+  $$('[data-dusk]').forEach(box => {
+    const night = $('.dusk__night', box), track = box.closest(box.dataset.track) || box;
+    let raf = 0;
+    const upd = () => { raf = 0; const r = track.getBoundingClientRect(), span = Math.max(1, r.height - innerHeight); const p = Math.min(1, Math.max(0, -r.top / span));
+      night.style.opacity = Math.min(1, Math.max(0, (p - .2) / .55)).toFixed(3); box.dispatchEvent(new CustomEvent('scrub', { detail: p })); };
+    addEventListener('scroll', () => { if (!raf) raf = requestAnimationFrame(upd); }, { passive: true });
+    setTimeout(upd, 0);
+  });
+
   /* captions that follow a scrub's progress: <p data-at="0-0.45"> */
-  $$('[data-scrub]').forEach(box => {
+  $$('[data-scrub],[data-dusk]').forEach(box => {
     const caps = $$('[data-at]', box.closest('.reveal-s') || box);
     const num = $('[data-scrub-num]', box.closest('.reveal-s') || box);
     if (!caps.length && !num) return;

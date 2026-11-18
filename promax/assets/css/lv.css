@@ -182,7 +182,7 @@ main > section, .lv-grid, .stack { overflow-x: clip; }
 
 /* snappier scrolling: shorter scroll-played sections */
 .stack__wrap { height: 150vh; }
-.stack__wrap + .stack__wrap { margin-top: -100vh; }
+.stack__wrap + .stack__wrap { margin-top: -50vh; } /* next panel arrives only after this one is fully seen */
 .lv-quote { min-height: 110svh; }
 html { scroll-behavior: auto; }
 
@@ -211,3 +211,13 @@ html { scroll-behavior: auto; }
 
 .lv-cap, .lv-curtain .reveal-s__num { text-shadow: 0 2px 24px rgba(0,0,0,.45), 0 1px 3px rgba(0,0,0,.3); }
 .lv-curtain .reveal-s__stick::after { background: linear-gradient(180deg, rgba(0,0,0,.28), rgba(0,0,0,0) 26%, rgba(0,0,0,0) 60%, rgba(0,0,0,.42)); }
+
+/* whole development panel is a link; text and buttons stay on top */
+.stack__link { position: absolute; inset: 0; z-index: 1; }
+.stack__p .stack__no, .stack__p .stack__c { pointer-events: none; }
+.stack__p .stack__c a { pointer-events: auto; }
+.stack__bg img { transition: transform 1.4s var(--ease); }
+.stack__p:hover .stack__bg img { transform: scale(1.15); }
+/* Loft day-to-dusk (real renders) */
+[data-dusk] .dusk__day, [data-dusk] .dusk__night { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; }
+[data-dusk] .dusk__night { opacity: 0; will-change: opacity; }
