@@ -442,7 +442,7 @@
     };
     const loop = () => {
       target = progress() * (count - 1);
-      cur += (target - cur) * 0.22;
+      cur += (target - cur) * 0.45;
       if (Math.abs(target - cur) < 0.05) cur = target;
       draw();
       box.dispatchEvent(new CustomEvent('scrub', { detail: cur / (count - 1) }));

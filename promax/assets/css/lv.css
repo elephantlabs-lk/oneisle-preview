@@ -179,3 +179,9 @@ main > section, .lv-grid, .stack { overflow-x: clip; }
   .lv-lead { font-size: 24px; }
   .lv-quote__t .lv-h1 { font-size: 30px; }
 }
+
+/* snappier scrolling: shorter scroll-played sections */
+.stack__wrap { height: 150vh; }
+.stack__wrap + .stack__wrap { margin-top: -100vh; }
+.lv-quote { min-height: 110svh; }
+html { scroll-behavior: auto; }
