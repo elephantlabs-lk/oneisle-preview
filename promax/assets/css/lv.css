@@ -187,7 +187,7 @@ main > section, .lv-grid, .stack { overflow-x: clip; }
 html { scroll-behavior: auto; }
 
 /* curtain reveal → look outside */
-.lv-curtain { height: 340vh; }
+.lv-curtain { height: 300vh; }
 .lv-curtain .reveal-s__stick::after { background: linear-gradient(180deg, rgba(0,0,0,.25), rgba(0,0,0,0) 28%, rgba(0,0,0,0) 62%, rgba(0,0,0,.4)); }
 .lv-cap { left: calc(50% + var(--m) / 2) !important; right: var(--m) !important; text-align: left !important; bottom: clamp(70px, 14vh, 170px) !important; color: #fff; }
 .lv-cap .lbl { margin-bottom: 14px; }
@@ -208,3 +208,6 @@ html { scroll-behavior: auto; }
 
 .reveal-s__stick .scrub__cv { z-index: 1; }
 .reveal-s__stick .reveal-s__poster { z-index: 0; }
+
+.lv-cap, .lv-curtain .reveal-s__num { text-shadow: 0 2px 24px rgba(0,0,0,.45), 0 1px 3px rgba(0,0,0,.3); }
+.lv-curtain .reveal-s__stick::after { background: linear-gradient(180deg, rgba(0,0,0,.28), rgba(0,0,0,0) 26

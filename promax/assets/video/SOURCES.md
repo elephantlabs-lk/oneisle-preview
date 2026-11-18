@@ -6,5 +6,5 @@ Free licence: Mixkit Stock Video Free License (https://mixkit.co/license/#videoF
 
 - cycle-tropical — Pexels #39105099 (Pexels licence)
 
-- curtain-view frames — Mixkit #22066 (curtains) + Pexels #7578535 "View of trees from a window" (Pexels licence)
+- curtains-v2 frames — Mixkit #22066 (curtains only)
 - cycle-villa / st-villa / villa-v1 frames — Pexels #40808151 "Modern tropical house with lush garden" (Pexels licence)
